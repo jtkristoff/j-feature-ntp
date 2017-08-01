@@ -133,6 +133,7 @@ References
 Signatories
 ===========
 
+ * José A. Domínguez, Director of Security Services, University of Oregon
  * Andrew Gallo, Principal Network Engineer, The George Washington University
  * John Kristoff, Network Architect, DePaul University
  * Michael H. Lambert, GigaPOP Manager, Pittsburgh Supercomputing Center/3ROX
