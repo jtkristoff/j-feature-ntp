@@ -134,4 +134,5 @@ Signatories
 ===========
 
  * John Kristoff, Network Architect, DePaul University
+ * Michael H. Lambert, GigaPOP Manager, Pittsburgh Supercomputing Center/3ROX
  * Karl Newell, Network Security Engineer, Internet2
