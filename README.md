@@ -127,7 +127,7 @@ References
    Template](http://www.team-cymru.org/secure-ntp-template.html)
 
  * [Time Management Administration Guide for Routing
-   Devices](http://www.juniper.net/documentation/en_US/junos/information-products/pathway-pages/system-basics/time-management.htm)
+   Devices](http://www.juniper.net/documentation/en_US/junos/information-products/pathway-pages/system-basics/time-management.html)
 
 
 Signatories
