@@ -45,28 +45,65 @@ particularly acute threat in practice.  Open NTP services from routing
 systems have been implicated in real-world DDoS attacks and information
 leak cases.  Many network operators have taken steps to protect
 NTP services from abuse by configuring loopback firewall filters that
-restrict access to the NTP service from all, but a handful of statically
+restrict access to the NTP service from all but a handful of statically
 configured time systems the router is set to synchronize time with.
 
 Generally, in enterprise and service provider router systems, the NTP
 service is only ever used as a client service, and rarely if ever do
-these routers act as NTP servers for other remote systems.  Therefore we
-urge Juniper to provide the ability to configure the *interface* and
-*restrict* options for the NTP service for those operators that wish to
-remove any possibility of access to the NTP service from remote systems.
+these routers act as NTP servers for other remote systems.  While there
+exists alternative NTP implementations such as
+[chrony](https://chrony.tuxfamily.org),
+[OpenNTPD](http://www.openntpd.org/), and
+[Ntimed](http://nwtime.org/projects/ntimed/) that may be designed to
+limit remote access more easily by default, changing NTP software is
+not a trivial undertaking.  Therefore we urge Juniper to provide the
+ability to configure the underlying *interface* and *restrict* NTP
+software configuration options so those operators that wish to further
+and more easily restrict access to the JUNOS NTP service may do so.
 
 
 Suggested JUNOS Syntax Changes
 ==============================
 
 We are seeking two specific features to the `system ntp` configuration
-hierarchy syntax.  We first summarize these changes, provide reference
-`ntp.conf` configuration examples and suggest corresponding JUNOS
-configuration statements.
+hierarchy syntax.  We provide reference `ntp.conf` configuration
+examples and suggest corresponding JUNOS configuration statements.
 
 
-`restrict` option
------------------
+example `ntp.conf`
+------------------
+
+The reference implementation of the network time protocol, which is
+widely used on Unix-based operating systems including JUNOS, reads the
+NTP server configuration from `/etc/ntp.conf`.  Here we demonstrate how
+the `restrict` and `interface` configuration options might be used to
+accomplish a hardening best common practice we are advocating Juniper
+Networks support with corresponding JUNOS configuration statements.
+
+The following `restrict` options would instruct the NTP process to
+ignore all NTP messages by default except those from the loopback
+addresses and one example address:
+
+```
+restrict default ignore
+restrict 127.0.0.0 mask 255.0.0.0
+restrict ::1
+restrict 192.0.2.1
+```
+
+The following `interface` options would cause the running NTP process to
+open a UDP listener socket only on the loopback addresses and the
+management interface:
+
+```
+interface ignore wildcard
+interface listen 127.0.0.1
+interface listen ::1
+interface listen fxp0
+````
+
+New JUNOS `restrict` option
+---------------------------
 
 The `restrict` access control option dictates what messages the NTP
 process will receive, act on, and respond to.  The reference ntpd
@@ -75,66 +112,68 @@ argue that only a handful are necessary for Juniper routers.  We
 recommend the following `restrict` options be supported:
 
 ```
-  [edit system]
-  ntp {
-      restrict [default | address] {
-          ignore;
-          nomodify;
-          noquery;
-          nopeer;
-          noserve;
-          notrap;
-          notrust;
-      }
-  }
+[edit system]
+ntp {
+    restrict [ default | address[/prefix] ] {
+        ignore;
+        nomodify;
+        noquery;
+        nopeer;
+        noserve;
+        notrap;
+        notrust;
+    }
+}
 ```
 
 
-`interface` option
-------------------
+New JUNOS `interface` option
+----------------------------
 
 The `interface` configuration option controls which interface or address
 will be opened by ntpd and listen for incoming messages for processing.
-We recommend the following `interface` options be supported:
+Note, in order for the clock to synchronize time with a remote IP host,
+a corresponding routed address must have a listener.  We recommend the
+following `interface` options be supported:
 
 ```
-  [edit system]
-  ntp {
-      interface [listen | ignore | drop] {
-          all;
-          ipv4;
-          ipv6;
-          [interface];
-          address[/prefix];
-      }
-  }
+[edit system]
+ntp {
+    interface [ listen | ignore | drop ] {
+        address[/prefix];
+        all;
+        [interface];
+        ipv4;
+        ipv6;
+        wildcard;
+    }
+}
 ```
-
  
 References
 ==========
 
- * [ntpd Access Control Commands and
-   Options](https://www.eecis.udel.edu/~mills/ntp/html/accopt.html)
+* [ntpd Access Control Commands and
+  Options](https://www.eecis.udel.edu/~mills/ntp/html/accopt.html)
 
- * [ntpd Miscellaneous Commands and
-   Options](https://www.eecis.udel.edu/~mills/ntp/html/miscopt.html)
+* [ntpd Miscellaneous Commands and
+  Options](https://www.eecis.udel.edu/~mills/ntp/html/miscopt.html)
 
- * [Attacking the Network Time
-   Protocol](https://www.cs.bu.edu/~goldbe/NTPattack.html)
+* [Attacking the Network Time
+  Protocol](https://www.cs.bu.edu/~goldbe/NTPattack.html)
 
- * [Secure NTP
-   Template](http://www.team-cymru.org/secure-ntp-template.html)
+* [Secure NTP
+  Template](http://www.team-cymru.org/secure-ntp-template.html)
 
- * [Time Management Administration Guide for Routing
-   Devices](http://www.juniper.net/documentation/en_US/junos/information-products/pathway-pages/system-basics/time-management.html)
+* [Time Management Administration Guide for Routing
+  Devices](http://www.juniper.net/documentation/en_US/junos/information-products/pathway-pages/system-basics/time-management.htm)
 
 
 Signatories
 ===========
 
- * José A. Domínguez, Director of Security Services, University of Oregon
- * Andrew Gallo, Principal Network Engineer, The George Washington University
- * John Kristoff, Network Architect, DePaul University
- * Michael H. Lambert, GigaPOP Manager, Pittsburgh Supercomputing Center/3ROX
- * Karl Newell, Network Security Engineer, Internet2
+* José A. Domínguez, Director of Security Services, University of Oregon
+* Andrew Gallo, Principal Network Engineer, The George Washington University
+* John Kristoff, Network Architect, DePaul University
+* Michael H. Lambert, GigaPOP Manager, Pittsburgh Supercomputing Center/3ROX
+* Karl Newell, Network Security Engineer, Internet2
