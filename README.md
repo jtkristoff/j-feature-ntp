@@ -17,6 +17,7 @@ Networks commit to adding these capabilities into JUNOS.  These
 capabilities are important for network operators to completely and more
 easily limit access to the NTP process from outside the local system.
 
+* An ER (enhancement request) has been filed on or before April 24, 2018.
 
 Background and Rationale
 ========================
